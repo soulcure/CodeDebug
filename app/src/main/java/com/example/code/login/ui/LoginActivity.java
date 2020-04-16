@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         mContext = this;
-        initOneKeyLogin();
+        getPhoneInfo();
 
         /*loginViewModel = ViewModelProviders.of(this, new LoginViewModelFactory())
                 .get(LoginViewModel.class);*/
@@ -138,15 +138,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private void showLoginFailed(@StringRes Integer errorString) {
         Toast.makeText(getApplicationContext(), errorString, Toast.LENGTH_SHORT).show();
-    }
-
-
-    private void initOneKeyLogin() {
-        OneKeyLoginManager.getInstance().init(getApplicationContext(), "123456", new InitListener() {
-            @Override
-            public void getInitStatus(int code, String result) {
-            }
-        });
     }
 
 

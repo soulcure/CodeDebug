@@ -14,10 +14,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('keystore/nuu_info_keystore.jks')
-            storePassword '12345678910'
-            keyAlias 'key0'
-            keyPassword '12345678910'
+            storeFile file('keystore/debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
         }
     }
 
