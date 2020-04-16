@@ -22,6 +22,8 @@ package com.example.code.http.api;
  */
 public interface Api {
     String APP_DEFAULT_DOMAIN = "https://tvpi.coocaa.com";
+    //String APP_DEFAULT_DOMAIN = "http://172.20.155.103:3000";
+
 
     String XIAOWEI_DOMAIN = "https://user.coocaa.com";
     String XIAOWEI_DUMAIN_NAME = "xiaowei";

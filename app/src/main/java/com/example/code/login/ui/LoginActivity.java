@@ -13,6 +13,7 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -30,6 +31,22 @@ import com.chuanglan.shanyan_sdk.listener.InitListener;
 import com.chuanglan.shanyan_sdk.listener.OneKeyLoginListener;
 import com.chuanglan.shanyan_sdk.listener.OpenLoginAuthListener;
 import com.example.code.R;
+import com.example.code.http.NetWorkManager;
+import com.example.code.http.common.Constants;
+import com.example.code.http.util.SignCore;
+import com.example.code.login.model.LoginReq;
+import com.example.code.login.model.LoginResp;
+import com.example.code.util.GsonUtil;
+
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.HashMap;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.DefaultObserver;
+import io.reactivex.schedulers.Schedulers;
+import okhttp3.ResponseBody;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -150,6 +167,11 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void getPhoneInfoStatus(int code, String result) {
                 Log.e(TAG, "getPhoneInfo： code==" + code + "   result==" + result);
+                if (code == 1022) {//预取号成功
+
+                } else {
+                    //todo
+                }
             }
         });
 
@@ -160,13 +182,80 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void getOpenLoginAuthStatus(int code, String result) {
                 Log.e(TAG, "getOpenLoginAuthStatus： code==" + code + "   result==" + result);
+
+                if (code == 1000) {//授权页拉起成功
+
+                } else {
+                    //todo 一键登录失败
+                }
             }
         }, new OneKeyLoginListener() {
             @Override
             public void getOneKeyLoginStatus(int code, String result) {
                 Log.e(TAG, "getOneKeyLoginStatus： code==" + code + "   result==" + result);
+
+                if (code == 1000) {//获取一键登录token成功
+                    try {
+                        JSONObject object = new JSONObject(result);
+                        String token = object.getString("token");
+                        login(token);
+                    } catch (Exception e) {
+                        Log.e(TAG, e.toString());
+                        //todo 一键登录失败
+                    }
+                } else {
+                    //todo 一键登录失败
+                }
             }
         });
+    }
+
+
+    private void login(String token) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("client_id", "client_id");  //接入端id，系统分配
+        params.put("time", System.currentTimeMillis() / 1000);
+        String sign = SignCore.buildRequestSign(params, Constants.KYP_CLIENT_KEY);
+        params.put("sign", sign);
+
+        LoginReq body = new LoginReq();
+        body.setSystemType(1);   //1，安卓；2, IOS
+        body.setToken(token);
+
+        NetWorkManager.getInstance()
+                .getApiService()
+                .userLogin(params, body)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new DefaultObserver<ResponseBody>() {
+                    @Override
+                    public void onNext(ResponseBody responseBody) {
+                        String response = "";
+                        try {
+                            response = responseBody.string();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Log.d(TAG, "user login response = " + response);
+                        if (!TextUtils.isEmpty(response)) {
+                            LoginResp resp = GsonUtil.parse(response, LoginResp.class);
+                            if (resp != null && resp.isSuccess()) {
+
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        if (null != e)
+                            Log.d(TAG, "getVideoEpisodes,onFailure,statusCode:" + e.toString());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
     }
 
 

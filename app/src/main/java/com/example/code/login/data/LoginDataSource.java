@@ -45,51 +45,6 @@ public class LoginDataSource {
     }
 
 
-    private void login(String client_id, int page_index, int page_size) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("client_id", client_id);
-        params.put("time", System.currentTimeMillis() / 1000);
-        String sign = SignCore.buildRequestSign(params, Constants.KYP_CLIENT_KEY);
-        params.put("sign", sign);
 
-        LoginReq body = new LoginReq();
-        body.setSystemType(1);
-        body.setToken("1234");
-
-        NetWorkManager.getInstance()
-                .getApiService()
-                .userLogin(params, body)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new DefaultObserver<ResponseBody>() {
-                    @Override
-                    public void onNext(ResponseBody responseBody) {
-                        String response = "";
-                        try {
-                            response = responseBody.string();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        Log.d(TAG, "user login response = " + response);
-                        if (!TextUtils.isEmpty(response)) {
-                            LoginResp resp = GsonUtil.parse(response, LoginResp.class);
-                            if (resp != null && resp.isSuccess()) {
-
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        if (null != e)
-                            Log.d(TAG, "getVideoEpisodes,onFailure,statusCode:" + e.toString());
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
-    }
 
 }

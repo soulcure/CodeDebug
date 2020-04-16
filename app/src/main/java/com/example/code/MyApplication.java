@@ -31,6 +31,11 @@ public class MyApplication extends Application {
             public void getInitStatus(int code, String result) {
                 //闪验SDK初始化结果回调
                 Log.e(TAG, "init： code==" + code + "   result==" + result);
+                if (code == 1022) {//初始化成功
+
+                } else {
+                    //todo
+                }
             }
         });
     }
