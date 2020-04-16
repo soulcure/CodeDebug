@@ -6,14 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @ClassName SignCore
- * @Description TODO (write something)
- * @User WHY
- * @Date 2018/12/10
- * @Version TODO (write something)
- */
-
 public class SignCore {
     /**
      * 除去数组中的空值和签名参数
