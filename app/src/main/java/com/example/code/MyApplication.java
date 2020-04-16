@@ -11,7 +11,7 @@ import com.chuanglan.shanyan_sdk.listener.InitListener;
 public class MyApplication extends Application {
 
 
-    private static final String TAG = "colin";
+    private static final String TAG = "login";
 
     @Override
     public void onCreate() {
@@ -30,7 +30,7 @@ public class MyApplication extends Application {
             @Override
             public void getInitStatus(int code, String result) {
                 //闪验SDK初始化结果回调
-                Log.e(TAG, "初始化： code==" + code + "   result==" + result);
+                Log.e(TAG, "init： code==" + code + "   result==" + result);
             }
         });
     }

@@ -33,6 +33,8 @@ import com.example.code.R;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final String TAG = "login";
+
     private Context mContext;
     private LoginViewModel loginViewModel;
 
@@ -59,7 +61,7 @@ public class LoginActivity extends AppCompatActivity {
                 if (loginFormState == null) {
                     return;
                 }
-                loginButton.setEnabled(loginFormState.isDataValid());
+                //loginButton.setEnabled(loginFormState.isDataValid());
                 if (loginFormState.getUsernameError() != null) {
                     usernameEditText.setError(getString(loginFormState.getUsernameError()));
                 }
@@ -123,9 +125,11 @@ public class LoginActivity extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadingProgressBar.setVisibility(View.VISIBLE);
+                /*loadingProgressBar.setVisibility(View.VISIBLE);
                 loginViewModel.login(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
+                        passwordEditText.getText().toString());*/
+
+                openLoginAuth();
             }
         });
     }
@@ -145,13 +149,7 @@ public class LoginActivity extends AppCompatActivity {
         OneKeyLoginManager.getInstance().getPhoneInfo(new GetPhoneInfoListener() {
             @Override
             public void getPhoneInfoStatus(int code, String result) {
-                if (code == 1022) { //success
-                    Toast.makeText(mContext, "getPhoneInfo Success", Toast.LENGTH_SHORT).show();
-                    Log.d("test", "getPhoneInfo Success");
-                } else { //fail
-                    Toast.makeText(mContext, result, Toast.LENGTH_SHORT).show();
-                    Log.d("test", result);
-                }
+                Log.e(TAG, "getPhoneInfo： code==" + code + "   result==" + result);
             }
         });
 
@@ -161,13 +159,12 @@ public class LoginActivity extends AppCompatActivity {
         OneKeyLoginManager.getInstance().openLoginAuth(false, new OpenLoginAuthListener() {
             @Override
             public void getOpenLoginAuthStatus(int code, String result) {
-
+                Log.e(TAG, "getOpenLoginAuthStatus： code==" + code + "   result==" + result);
             }
         }, new OneKeyLoginListener() {
             @Override
-
             public void getOneKeyLoginStatus(int code, String result) {
-
+                Log.e(TAG, "getOneKeyLoginStatus： code==" + code + "   result==" + result);
             }
         });
     }
