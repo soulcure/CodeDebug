@@ -1,4 +1,4 @@
-package com.example.code.ui.login;
+package com.example.code.login.ui;
 
 import android.app.Activity;
 
