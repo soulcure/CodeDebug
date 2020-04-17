@@ -41,7 +41,7 @@ public class NetWorkManager {
         private static final NetWorkManager INSTANCE = new NetWorkManager();
     }
 
-    public static final NetWorkManager getInstance() {
+    public static NetWorkManager getInstance() {
         return NetWorkManagerHolder.INSTANCE;
     }
 

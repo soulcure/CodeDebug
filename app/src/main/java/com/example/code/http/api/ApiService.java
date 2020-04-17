@@ -37,7 +37,7 @@ import retrofit2.http.Url;
 public interface ApiService {
     //一键登录
     @POST("/skyapi/user/sy/login")
-    Observable<ResponseBody> userLogin(@FieldMap Map<String, Object> queryMap, @Body LoginReq body);
+    Observable<ResponseBody> userLogin(@QueryMap Map<String, Object> queryMap, @Body LoginReq body);
 
     //手机号注册
     @POST("/skyapi/user/register/mobile")

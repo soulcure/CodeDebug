@@ -146,7 +146,9 @@ public class LoginActivity extends AppCompatActivity {
                 loginViewModel.login(usernameEditText.getText().toString(),
                         passwordEditText.getText().toString());*/
 
-                openLoginAuth();
+                //openLoginAuth();
+
+                login("A2-JLJCojONpcvMVNNvFmwupqeg4eR6RljgjNJu9nuzcoHQTdB_yhFZgVWcgpahAOMfNmIgz8GrtYG2cBH_Nr7mHjsNc9gE6wp7q0KIUMnCxZN8FguY_Akbeq8Dr_1LasSQXEGMbNr_r4BkWHgz2CsqvbGDsk3ikoi9AhJxIeJvpAVemW9CXcRc_5zUzaCJiq0PwJKQtZ5cOMBk5oi84SdCnWF5NqJEm9x5edyvtJ5m9FKqnHj2GlUaemiy6aQkH34wUd88Rhsh1hVFjs4SqJ_YXg");
             }
         });
     }
@@ -199,6 +201,7 @@ public class LoginActivity extends AppCompatActivity {
                         JSONObject object = new JSONObject(result);
                         String token = object.getString("token");
                         login(token);
+                        //login("A2-JLJCojONpcvMVNNvFmwupqeg4eR6RljgjNJu9nuzcoHQTdB_yhFZgVWcgpahAOMfNmIgz8GrtYG2cBH_Nr7mHjsNc9gE6wp7q0KIUMnCxZN8FguY_Akbeq8Dr_1LasSQXEGMbNr_r4BkWHgz2CsqvbGDsk3ikoi9AhJxIeJvpAVemW9CXcRc_5zUzaCJiq0PwJKQtZ5cOMBk5oi84SdCnWF5NqJEm9x5edyvtJ5m9FKqnHj2GlUaemiy6aQkH34wUd88Rhsh1hVFjs4SqJ_YXg");
                     } catch (Exception e) {
                         Log.e(TAG, e.toString());
                         //todo 一键登录失败
@@ -213,7 +216,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void login(String token) {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("client_id", "client_id");  //接入端id，系统分配
+        params.put("client_id", "tvPie");  //接入端id，系统分配
         params.put("time", System.currentTimeMillis() / 1000);
         String sign = SignCore.buildRequestSign(params, Constants.KYP_CLIENT_KEY);
         params.put("sign", sign);
@@ -224,7 +227,7 @@ public class LoginActivity extends AppCompatActivity {
 
         NetWorkManager.getInstance()
                 .getApiService()
-                .userLogin(params, body)
+                .userLogin(params,body)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new DefaultObserver<ResponseBody>() {
