@@ -59,7 +59,9 @@ public class SdkManager {
     }
 
 
-    public void getDevices() {
+    public void getDevices(Devices listener) {
+        binderPool.setListener(listener);
+
         IBinder binder = binderPool.queryBinder(BIND_DEVICE);//获取Binder后使用
 
         IDeviceManager iDeviceManager = IDeviceManager.Stub.asInterface(binder);

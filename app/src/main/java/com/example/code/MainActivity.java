@@ -7,7 +7,10 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import com.example.sdk.Devices;
 import com.example.sdk.SdkManager;
+
+import java.util.List;
 
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -45,7 +48,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 SdkManager.instance(this).getFamilies();
                 break;
             case R.id.test_tag_inout:
-                SdkManager.instance(this).getDevices();
+                SdkManager.instance(this).getDevices(new Devices() {
+                    @Override
+                    public void onSuccess(List<String> list) {
+                        Log.e(TAG, "get getDevices:" + list.toString());
+                    }
+                });
                 break;
             default:
                 break;

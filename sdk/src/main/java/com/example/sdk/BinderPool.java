@@ -66,10 +66,27 @@ public class BinderPool {
     };
 
 
+    Devices listener;
+
+    public Devices getListener() {
+        return listener;
+    }
+
+    public void setListener(Devices listener) {
+        this.listener = listener;
+    }
+
     private ICallback mProxyCallback = new ICallback.Stub() {
         @Override
         public void onResult(String info) throws RemoteException {
             Log.e(TAG, "bind Pool onResult=" + info);
+            if (listener != null) {
+                ArrayList<String> list = new ArrayList<>();
+                list.add("1");
+                list.add("2");
+                list.add("3");
+                listener.onSuccess(list);
+            }
         }
     };
 
