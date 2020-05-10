@@ -1,0 +1,15 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.core">
+
+    <application>
+        <service
+            android:name="com.example.core.SkyServer"
+            android:process=":remote">
+            <intent-filter>
+                <action android:name="com.sdk.service.BIND" />
+            </intent-filter>
+        </service>
+    </application>
+
+
+</manifest>
