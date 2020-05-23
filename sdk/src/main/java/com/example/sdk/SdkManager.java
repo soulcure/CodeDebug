@@ -80,25 +80,18 @@ public class SdkManager {
         mProcessHandler.post(new Runnable() {
             @Override
             public void run() {
-                binderPool.setListener(listener);
 
                 IBinder binder = binderPool.queryBinder(BIND_DEVICE);//获取Binder后使用
-
                 IDeviceManager iDeviceManager = IDeviceManager.Stub.asInterface(binder);
 
                 try {
-                    Log.e(TAG, "test 2222");
-
                     final List<Device> devices = new ArrayList<>();
                     iDeviceManager.getDevices(devices, familyId);
-
-                    Log.e(TAG, "test 5555");
 
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             listener.onSuccess(devices);
-                            Log.e(TAG, "test 7777");
                         }
                     });
 
@@ -107,8 +100,6 @@ public class SdkManager {
                 }
             }
         });
-
-
     }
 
 

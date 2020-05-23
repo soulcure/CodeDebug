@@ -53,18 +53,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.test_tag_out:
                 break;
             case R.id.test_tag_inout:
-                Log.e(TAG, "test 1111");
-
                 SdkManager.instance(this).getDevices("1", new Devices() {
                     @Override
                     public void onSuccess(List<Device> list) {
                         tv_info.setText(list.get(0).getDeviceName());
-                        Log.e(TAG, "test result");
                         Log.e(TAG, "client getDevices:" + list.toString());
                     }
                 });
-                Log.e(TAG, "test 2222");
-
                 break;
             default:
                 break;
