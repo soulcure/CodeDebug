@@ -26,9 +26,6 @@ public class BinderPoolImpl extends IBinderPool.Stub {
             case BIND_DEVICE:
                 binder = new DeviceImpl(mServer);//PayImpl继承了IPay.Stub, IPay.Stub继承了Binder
                 break;
-            case BIND_FAMILY:
-                binder = new FamilyImpl(mServer);
-                break;
             case BIND_CALLBACK:
                 binder = new CallBackImpl(mServer);
                 break;

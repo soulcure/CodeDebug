@@ -82,10 +82,7 @@ public class BinderPool {
             Log.e(TAG, "bind Pool onResult=" + info);
             if (listener != null) {
                 ArrayList<String> list = new ArrayList<>();
-                list.add("1");
-                list.add("2");
-                list.add("3");
-                listener.onSuccess(list);
+                //listener.onSuccess(list);
             }
         }
     };
