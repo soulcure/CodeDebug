@@ -1,6 +1,7 @@
 package com.example.core;
 
 import android.os.RemoteException;
+import android.text.TextUtils;
 
 import com.example.sdk.ICallBackManager;
 import com.example.sdk.ICallback;
@@ -16,20 +17,20 @@ public class CallBackImpl extends ICallBackManager.Stub {//Stub内部类，其�
         mServer = server;
     }
 
+
     @Override
-    public void registerCallback(ICallback cb) throws RemoteException {
-        if (cb != null) {
-            mServer.getCallbacks().register(cb);
+    public void registerCallback(String key, ICallback cb) throws RemoteException {
+        if (!TextUtils.isEmpty(key) && cb != null) {
+            mServer.registerCallback(key, cb);
         }
     }
 
     @Override
-    public void unregisterCallback(ICallback cb) throws RemoteException {
-        if (cb != null) {
-            mServer.getCallbacks().unregister(cb);
+    public void unregisterCallback(String key, ICallback cb) throws RemoteException {
+        if (!TextUtils.isEmpty(key) && cb != null) {
+            mServer.registerCallback(key, cb);
         }
     }
-
 
 
 }

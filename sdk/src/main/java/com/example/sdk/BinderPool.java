@@ -31,6 +31,7 @@ public class BinderPool {
     private IBinderPool mBinderPool;
     private ICallBackManager iCallBackManager;
     private List<SdkManager.InitListener> mInitListenerList;
+    private String key;
 
     private ServiceConnection conn = new ServiceConnection() {
         @Override
@@ -40,7 +41,7 @@ public class BinderPool {
             try {
                 IBinder binder = mBinderPool.queryBinder(BIND_CALLBACK);//获取Binder后使用
                 iCallBackManager = ICallBackManager.Stub.asInterface(binder);
-                iCallBackManager.registerCallback(mProxyCallback);
+                iCallBackManager.registerCallback(key, mProxyCallback);
 
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -88,8 +89,9 @@ public class BinderPool {
     };
 
 
-    public BinderPool(Context context) {
+    public BinderPool(Context context, String key) {
         mContext = context.getApplicationContext();
+        this.key = key;
         mInitListenerList = new ArrayList<>();
     }
 
@@ -149,7 +151,7 @@ public class BinderPool {
 
             if (iCallBackManager != null) {
                 try {
-                    iCallBackManager.unregisterCallback(mProxyCallback);
+                    iCallBackManager.unregisterCallback(key, mProxyCallback);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }

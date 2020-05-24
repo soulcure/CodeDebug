@@ -32,6 +32,7 @@ public class SdkManager {
 
     private Handler mHandler;
     private ProcessHandler mProcessHandler;
+    private String key;
 
     /**
      * SDK初始化结果监听器
@@ -55,7 +56,8 @@ public class SdkManager {
     }
 
     private SdkManager(Context context) {
-        binderPool = new BinderPool(context);
+        key = context.getPackageName() + context.getApplicationInfo().uid;
+        binderPool = new BinderPool(context, key);
         initHandler();
     }
 
@@ -100,6 +102,21 @@ public class SdkManager {
                 }
             }
         });
+    }
+
+
+    public void getFamilies(final Devices listener) {
+        binderPool.setListener(listener);
+
+        IBinder binder = binderPool.queryBinder(BIND_FAMILY);//获取Binder后使用
+
+        //将服务端的Binder对象转换成客户端所需的AIDL类型的的对象
+        IFamilyManager iFamilyManager = IFamilyManager.Stub.asInterface(binder);//ISecurity.Stub.asInterface
+        try {
+            iFamilyManager.getFamilyList(key);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
 
