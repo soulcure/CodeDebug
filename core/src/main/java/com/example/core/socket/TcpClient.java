@@ -154,18 +154,11 @@ public class TcpClient extends PduUtil implements Runnable {
      */
     public synchronized void sendProto(short msgType,
                                        ReceiveListener callback) {
-        PduBase pduBase = new PduBase();
+        String pduBase = "";
 
-        pduBase.msgType = msgType;
-        pduBase.length = 10;
-        pduBase.body = "msg".getBytes();
-
-        short key = (short) (msgType & 0x00FF);
-
-        Log.d(TAG, "length:" + pduBase.length);
-        if (callback != null) {
+        /*if (callback != null) {
             mCommonListener.put(key, callback);
-        }
+        }*/
         sendPdu(pduBase);
     }
 
@@ -254,8 +247,8 @@ public class TcpClient extends PduUtil implements Runnable {
         isLogin = login;
     }
 
-    private synchronized void sendPdu(PduBase pduBase) {
-        ByteBuffer buffer = serializePdu(pduBase);
+    private synchronized void sendPdu(String pduBase) {
+        ByteBuffer buffer = ByteBuffer.wrap(pduBase.getBytes());
         if (mSender != null
                 && isConnect()) {
             mSender.send(buffer);
@@ -269,25 +262,20 @@ public class TcpClient extends PduUtil implements Runnable {
 
 
     @Override
-    public void OnRec(final PduBase pduBase) {
-        final byte ver = (byte) ((pduBase.msgType >> 12) & 0x000F);
-        final byte cate = (byte) ((pduBase.msgType >> 8) & 0x000F);
-        final short key = (short) (pduBase.msgType & 0x00FF);
+    public void OnRec(final String pduBase) {
 
-        String log = "tcp rec ver:" + ver + "& tcp rec cate:" + cate + "& tcp rec commandId:" + key;
-        Log.d(TAG, log);
 
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                ReceiveListener callback = mCommonListener.get(key);
-
-                if (callback != null) {
-                    callback.OnRec(pduBase.body);
-                    mCommonListener.remove(key);
-                } else {
-                    OnCallback(pduBase);
-                }
+//                ReceiveListener callback = mCommonListener.get(key);
+//
+//                if (callback != null) {
+//                    callback.OnRec(pduBase.body);
+//                    mCommonListener.remove(key);
+//                } else {
+//                    OnCallback(pduBase);
+//                }
             }
         });
 
