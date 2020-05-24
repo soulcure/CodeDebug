@@ -262,8 +262,8 @@ public class TcpClient extends PduUtil implements Runnable {
 
 
     @Override
-    public void OnRec(final String pduBase) {
-
+    public void OnRec(final String content) {
+        PduBase pduBase = new PduBase(content);
 
         mHandler.post(new Runnable() {
             @Override
@@ -286,10 +286,10 @@ public class TcpClient extends PduUtil implements Runnable {
     @Override
     public void OnCallback(PduBase pduBase) {
         for (NotifyListener item : mNotifyListener) {
-            if (item.getCommandId() == pduBase.msgType) {
+            /*if (item.getCommandId() == pduBase.msgType) {
                 item.OnRec(pduBase.body);
                 break;
-            }
+            }*/
         }
     }
 
