@@ -1,9 +1,11 @@
-package com.example.core;
+package com.example.core.http;
 
 import android.content.ContentValues;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.example.core.utils.StreamUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;

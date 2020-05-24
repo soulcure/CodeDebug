@@ -3,6 +3,7 @@ package com.example.core;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.example.core.http.HttpConnector;
 import com.example.sdk.IDeviceManager;
 import com.example.sdk.entity.Device;
 
