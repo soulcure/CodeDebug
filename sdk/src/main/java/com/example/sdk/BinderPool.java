@@ -30,19 +30,50 @@ public class BinderPool {
 
     private Context mContext;
     private IBinderPool mBinderPool;
+
     private ICallBackManager iCallBackManager;
     private List<SdkManager.InitListener> mInitListenerList;
     private String key;
+
+
+    private ICallback mProxyCallback = new ICallback.Stub() {
+        @Override
+        public void onResult(String info) throws RemoteException {
+            Log.e(TAG, "bind Pool onResult=" + info);
+            if (listener != null) {
+                ArrayList<String> list = new ArrayList<>();
+                //listener.onSuccess(list);
+            }
+        }
+    };
+
+
+    private IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
+
+        @Override
+        public void binderDied() {
+            if (mBinderPool == null)
+                return;
+            mBinderPool.asBinder().unlinkToDeath(mDeathRecipient, 0);
+            mBinderPool = null;
+
+            bindService();
+          }
+    };
 
     private ServiceConnection conn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBinderPool = IBinderPool.Stub.asInterface(service);
+
             Log.e(TAG, "mBinderPool = " + mBinderPool);
             try {
                 IBinder binder = mBinderPool.queryBinder(BIND_CALLBACK);//获取Binder后使用
                 iCallBackManager = ICallBackManager.Stub.asInterface(binder);
                 iCallBackManager.registerCallback(key, mProxyCallback);
+
+                //server端死亡 代理回调
+                service.linkToDeath(mDeathRecipient, 0);
 
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -53,6 +84,8 @@ public class BinderPool {
                 item.success();
             }
             mInitListenerList.clear();
+
+
         }
 
         @Override
@@ -78,17 +111,6 @@ public class BinderPool {
         this.listener = listener;
     }
 
-    private ICallback mProxyCallback = new ICallback.Stub() {
-        @Override
-        public void onResult(String info) throws RemoteException {
-            Log.e(TAG, "bind Pool onResult=" + info);
-            if (listener != null) {
-                ArrayList<String> list = new ArrayList<>();
-                //listener.onSuccess(list);
-            }
-        }
-    };
-
 
     public BinderPool(Context context, String key) {
         mContext = context.getApplicationContext();
@@ -106,14 +128,7 @@ public class BinderPool {
         if (binded == BIND_STATUS.IDLE) {
             binded = BIND_STATUS.BINDING;
 
-            String PROXY_SERVICE = "com.example.core.SkyServer";
-            String PROXY_SERVICE_PACKAGE = "com.example.code";
-
-            Intent intent = new Intent(PROXY_SERVICE);
-            intent.setClassName(PROXY_SERVICE_PACKAGE, PROXY_SERVICE);
-
-            mContext.bindService(intent, conn, Context.BIND_AUTO_CREATE);
-            Log.e(TAG, "bind Pool Service！");
+            bindService();
 
         } else if (binded == BIND_STATUS.BINDING) {
             //do nothing
@@ -123,6 +138,17 @@ public class BinderPool {
             }
             mInitListenerList.clear();
         }
+    }
+
+    private void bindService(){
+        String PROXY_SERVICE = "com.example.core.SkyServer";
+        String PROXY_SERVICE_PACKAGE = "com.example.code";
+
+        Intent intent = new Intent(PROXY_SERVICE);
+        intent.setClassName(PROXY_SERVICE_PACKAGE, PROXY_SERVICE);
+
+        mContext.bindService(intent, conn, Context.BIND_AUTO_CREATE);
+        Log.e(TAG, "bind Pool Service！");
     }
 
 

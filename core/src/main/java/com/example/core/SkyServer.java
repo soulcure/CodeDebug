@@ -1,6 +1,5 @@
 package com.example.core;
 
-
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -21,15 +20,13 @@ import com.example.sdk.entity.Family;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 public class SkyServer extends Service {
     public static final String TAG = "AIDL";
 
-    private Map<String, RemoteCallbackList<ICallback>> mCallBack = new HashMap<>();
+    private RemoteCallbackList<ICallback> mCallBack = new RemoteCallbackList<>();
 
     private TcpClient mClient;
 
@@ -84,16 +81,7 @@ public class SkyServer extends Service {
             return;
         }
 
-        if (mCallBack.containsKey(key)) {
-            RemoteCallbackList<ICallback> callbacks = mCallBack.get(key);
-            if (callbacks != null) {
-                callbacks.register(cb);
-            }
-        } else {
-            RemoteCallbackList<ICallback> callbacks = new RemoteCallbackList<>();
-            callbacks.register(cb);
-            mCallBack.put(key, callbacks);
-        }
+        mCallBack.register(cb, key);
 
     }
 
@@ -102,14 +90,7 @@ public class SkyServer extends Service {
             return;
         }
 
-        if (mCallBack.containsKey(key)) {
-            RemoteCallbackList<ICallback> callbacks = mCallBack.get(key);
-            if (callbacks != null) {
-                callbacks.unregister(cb);
-            }
-
-            mCallBack.remove(key);
-        }
+        mCallBack.unregister(cb);
 
     }
 
@@ -124,7 +105,6 @@ public class SkyServer extends Service {
         List<Device> list = new ArrayList<>();
 
         String test = HttpConnector.doGet(null, "https://www.baidu.com/", null);
-
 
 
         Device device1 = new Device();
@@ -166,22 +146,19 @@ public class SkyServer extends Service {
         return families;
     }
 
-    private void callback(String key, String info) {
-        if (mCallBack.containsKey(key)) {
-            RemoteCallbackList<ICallback> callbacks = mCallBack.get(key);
-            if (callbacks != null) {
-                final int n = callbacks.beginBroadcast();
-                for (int i = 0; i < n; i++) {
-                    try {
-                        ICallback callback = callbacks.getBroadcastItem(i);
-                        callback.onResult(info);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-                }
-                callbacks.finishBroadcast();
+    private void callback(String info) {
+        final int n = mCallBack.beginBroadcast();
+        for (int i = 0; i < n; i++) {
+            try {
+                ICallback callback = mCallBack.getBroadcastItem(i);
+                String key = (String) mCallBack.getBroadcastCookie(i);
+
+                callback.onResult(info);
+            } catch (RemoteException e) {
+                e.printStackTrace();
             }
         }
+        mCallBack.finishBroadcast();
     }
 
 
