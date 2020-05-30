@@ -89,6 +89,9 @@ public class PduBase {
         private String forceSse;
     }
 
+    public PduBase() {
+
+    }
 
     PduBase(String json) {
         try {

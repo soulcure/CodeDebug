@@ -1,22 +1,22 @@
 package com.example.sdk;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.example.sdk.entity.Device;
+import com.example.sdk.entity.Family;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.sdk.BinderPool.BIND_DEVICE;
 import static com.example.sdk.BinderPool.BIND_FAMILY;
+import static com.example.sdk.BinderPool.BIND_KEY_CMD;
 
 
 public class SdkManager {
@@ -78,7 +78,7 @@ public class SdkManager {
     }
 
 
-    public void getDevices(final String familyId, final Devices listener) {
+    public void getDevices(final String familyId, final DevicesListener listener) {
         mProcessHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -105,15 +105,31 @@ public class SdkManager {
     }
 
 
-    public void getFamilies(final Devices listener) {
-        binderPool.setListener(listener);
+    public void getFamilies(final FamiliesListener listener) {
 
         IBinder binder = binderPool.queryBinder(BIND_FAMILY);//获取Binder后使用
 
         //将服务端的Binder对象转换成客户端所需的AIDL类型的的对象
         IFamilyManager iFamilyManager = IFamilyManager.Stub.asInterface(binder);//ISecurity.Stub.asInterface
         try {
-            iFamilyManager.getFamilyList(key);
+            List<Family> list = iFamilyManager.getFamilyList(key);
+
+            if (listener != null) {
+                listener.onSuccess(list);
+            }
+
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendKeyEvent(String dstSid, int keyCode, String keyEvent, final DevicesListener listener) {
+        binderPool.setListener(listener);
+
+        IBinder binder = binderPool.queryBinder(BIND_KEY_CMD);//获取Binder后使用
+        IKeyCmd iKeyCmd = IKeyCmd.Stub.asInterface(binder);
+        try {
+            iKeyCmd.sendKeyEvent(key, dstSid, keyCode, keyEvent);
         } catch (RemoteException e) {
             e.printStackTrace();
         }

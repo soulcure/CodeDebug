@@ -4,6 +4,9 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.example.sdk.IFamilyManager;
+import com.example.sdk.entity.Family;
+
+import java.util.List;
 
 public class FamilyImpl extends IFamilyManager.Stub {//Stub内部类，其实就是一个Binder类
     private static final String TAG = "AIDL";
@@ -14,10 +17,13 @@ public class FamilyImpl extends IFamilyManager.Stub {//Stub内部类，其实就
         mServer = server;
     }
 
+
+
+
     @Override
-    public void getFamilyList(String key) throws RemoteException {
+    public List<Family> getFamilyList(String key) throws RemoteException {
         Log.e(TAG, "getFamilyList");
-        mServer.postFamilies(key);
+        return mServer.getFamilies(key);
     }
 }
 

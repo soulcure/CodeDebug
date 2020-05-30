@@ -152,14 +152,11 @@ public class TcpClient extends PduUtil implements Runnable {
      *
      * @param callback 回调
      */
-    public synchronized void sendProto(short msgType,
-                                       ReceiveListener callback) {
-        String pduBase = "";
-
+    public synchronized void sendProto(PduBase msg, ReceiveListener callback) {
         /*if (callback != null) {
             mCommonListener.put(key, callback);
         }*/
-        sendPdu(pduBase);
+        sendPdu(msg.toJson());
     }
 
 

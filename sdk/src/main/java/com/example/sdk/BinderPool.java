@@ -18,6 +18,7 @@ public class BinderPool {
     public static final int BIND_DEVICE = 1;
     public static final int BIND_FAMILY = 2;
     public static final int BIND_CALLBACK = 3;
+    public static final int BIND_KEY_CMD = 4;
 
 
     private enum BIND_STATUS {
@@ -67,13 +68,13 @@ public class BinderPool {
     };
 
 
-    Devices listener;
+    DevicesListener listener;
 
-    public Devices getListener() {
+    public DevicesListener getListener() {
         return listener;
     }
 
-    public void setListener(Devices listener) {
+    public void setListener(DevicesListener listener) {
         this.listener = listener;
     }
 

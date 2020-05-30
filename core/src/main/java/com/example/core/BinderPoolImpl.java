@@ -9,10 +9,11 @@ import com.example.sdk.IBinderPool;
 import static com.example.sdk.BinderPool.BIND_CALLBACK;
 import static com.example.sdk.BinderPool.BIND_DEVICE;
 import static com.example.sdk.BinderPool.BIND_FAMILY;
+import static com.example.sdk.BinderPool.BIND_KEY_CMD;
 
 public class BinderPoolImpl extends IBinderPool.Stub {
 
-    private   SkyServer mServer;
+    private SkyServer mServer;
 
     BinderPoolImpl(SkyServer server) {
         super();
@@ -26,8 +27,14 @@ public class BinderPoolImpl extends IBinderPool.Stub {
             case BIND_DEVICE:
                 binder = new DeviceImpl(mServer);//PayImpl继承了IPay.Stub, IPay.Stub继承了Binder
                 break;
+            case BIND_FAMILY:
+                binder = new FamilyImpl(mServer);//PayImpl继承了IPay.Stub, IPay.Stub继承了Binder
+                break;
             case BIND_CALLBACK:
                 binder = new CallBackImpl(mServer);
+                break;
+            case BIND_KEY_CMD:
+                binder = new KeyCmdImpl(mServer);
                 break;
 
         }

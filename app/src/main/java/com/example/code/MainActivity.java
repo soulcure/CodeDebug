@@ -8,9 +8,11 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import com.example.sdk.Devices;
+import com.example.sdk.DevicesListener;
+import com.example.sdk.FamiliesListener;
 import com.example.sdk.SdkManager;
 import com.example.sdk.entity.Device;
+import com.example.sdk.entity.Family;
 
 import java.util.List;
 
@@ -51,9 +53,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
         switch (v.getId()) {
             case R.id.test_tag_in:
             case R.id.test_tag_out:
+                SdkManager.instance(this).getFamilies(new FamiliesListener() {
+                    @Override
+                    public void onSuccess(List<Family> list) {
+                        tv_info.setText(list.get(0).getFamilyName());
+                        Log.e(TAG, "client getFamilies:" + list.get(0).getFamilyName());
+                    }
+                });
                 break;
             case R.id.test_tag_inout:
-                SdkManager.instance(this).getDevices("1", new Devices() {
+                SdkManager.instance(this).getDevices("1", new DevicesListener() {
                     @Override
                     public void onSuccess(List<Device> list) {
                         tv_info.setText(list.get(0).getDeviceName());
