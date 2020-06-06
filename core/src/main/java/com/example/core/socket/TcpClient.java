@@ -6,6 +6,7 @@ import android.os.Message;
 import android.util.Log;
 
 
+import com.example.core.entity.MessageBean;
 import com.example.core.utils.AppUtils;
 
 import java.io.IOException;
@@ -73,7 +74,7 @@ public class TcpClient extends PduUtil implements Runnable {
     /**
      * 协议消息派发
      */
-    private final ConcurrentHashMap<Short, ReceiveListener> mCommonListener;
+    private final ConcurrentHashMap<String, ReceiveListener> mCommonListener;
 
 
     /**
@@ -152,11 +153,12 @@ public class TcpClient extends PduUtil implements Runnable {
      *
      * @param callback 回调
      */
-    public synchronized void sendProto(PduBase msg, ReceiveListener callback) {
-        /*if (callback != null) {
+    public synchronized void sendProto(MessageBean msg, ReceiveListener callback) {
+        String key = msg.getId();
+        if (callback != null) {
             mCommonListener.put(key, callback);
-        }*/
-        sendPdu(msg.toJson());
+        }
+        sendPdu(msg.toString());
     }
 
 

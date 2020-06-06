@@ -14,6 +14,8 @@ import com.example.sdk.SdkManager;
 import com.example.sdk.entity.Device;
 import com.example.sdk.entity.Family;
 
+import org.json.JSONObject;
+
 import java.util.List;
 
 
@@ -29,6 +31,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_main);
 
         tv_info = findViewById(R.id.tv_info);
+
+        JSONObject jsonObject = new JSONObject();
 
         findViewById(R.id.test_tag_in).setOnClickListener(this);
         findViewById(R.id.test_tag_out).setOnClickListener(this);

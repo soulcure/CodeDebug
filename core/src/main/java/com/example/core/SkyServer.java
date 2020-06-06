@@ -1,5 +1,6 @@
 package com.example.core;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -10,13 +11,19 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.example.core.entity.MessageBean;
 import com.example.core.http.HttpConnector;
 import com.example.core.httpserver.SimpleServer;
 import com.example.core.socket.PduBase;
 import com.example.core.socket.TcpClient;
+import com.example.core.utils.AppUtils;
+import com.example.core.utils.DeviceUtils;
 import com.example.sdk.ICallback;
 import com.example.sdk.entity.Device;
 import com.example.sdk.entity.Family;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -28,11 +35,15 @@ public class SkyServer extends Service {
 
     private RemoteCallbackList<ICallback> mCallBack = new RemoteCallbackList<>();
 
+    private Session sourceSession, targetSession;
     private TcpClient mClient;
 
     @Override
     public void onCreate() {
         super.onCreate();
+
+        sourceSession = new Session();
+        targetSession = new Session();
 
         mClient = new TcpClient(this);
 
@@ -48,9 +59,16 @@ public class SkyServer extends Service {
         return new BinderPoolImpl(this);
     }
 
+
     private void createTcp() {
-        String ip = "192.168.1.1";
-        int port = 5566;
+        final String sid = AppUtils.getStringSharedPreferences(this, "sid", null);
+        if (TextUtils.isEmpty(sid)) {
+            Log.e("TAG", "sid is null ,not create tcp connect");
+            return;
+        }
+
+        String ip = "192.168.1.1";   //ip
+        int port = 5566;             //port
 
         Log.d(TAG, "createTcp ip:" + ip + "   port:" + port);
 
@@ -60,7 +78,7 @@ public class SkyServer extends Service {
             TcpClient.IClientListener callback = new TcpClient.IClientListener() {
                 @Override
                 public void connectSuccess() {
-                    tcpLogin();
+                    tcpLogin(sid);
                 }
             };
             mClient.connect(callback);
@@ -71,8 +89,33 @@ public class SkyServer extends Service {
     /**
      * 发送登录IM服务器请求
      */
-    private void tcpLogin() {
+    private void tcpLogin(String sid) {
         Log.d(TAG, "socket connect success");
+
+        AppUtils.setStringSharedPreferences(this, "sid", sid);
+
+        sourceSession.setId(sid);
+        sourceSession.setExtraItem(Session.IM_CLOUD, sid);
+
+        String localIPAddress = DeviceUtils.getLocalIPAddress(this);
+        sourceSession.setExtraItem(Session.ADDRESS_LOCAL, localIPAddress);
+        sourceSession.setExtraItem(Session.STREAM_LOCAL, localIPAddress);
+
+    }
+
+
+    private void pingTarget(String sid) {
+
+        String targetIp = "";
+        int targetPort = 0;
+
+        targetSession.setId(sid);
+        targetSession.setExtraItem(Session.IM_CLOUD, sid);
+
+        targetSession.setExtraItem(Session.ADDRESS_LOCAL, targetIp);
+        targetSession.setExtraItem(Session.ADDRESS_LOCAL, targetIp);
+
+        targetSession.setExtraItem(Session.IM_LOCAL, targetIp + ":" + targetPort);
     }
 
 
@@ -95,8 +138,19 @@ public class SkyServer extends Service {
     }
 
 
-    public void sendProto(String key, String dstSid, int keyCode, String keyEvent) {
-        PduBase msg = new PduBase();
+    public void sendKeyCmd(int keyCode, String keyEvent) {
+
+        MessageBean.Builder builder = MessageBean.Builder.newBuilder();
+        builder.setSource(sourceSession.toString());
+        builder.setTarget(targetSession.toString());
+        builder.setClientSource(MessageBean.SMART_SCREEN);
+        builder.setClientSource(MessageBean.APP_STORE);
+        builder.setType("TEXT");
+        builder.setReply(false);
+        builder.setForceSse(true);
+        builder.setContent(MessageBean.getKeyCodeContent(keyCode, keyEvent));
+        MessageBean msg = builder.build();
+
         mClient.sendProto(msg, null);
     }
 
