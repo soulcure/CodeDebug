@@ -1,6 +1,6 @@
 package com.example.core.entity;
 
-import com.google.gson.annotations.SerializedName;
+import android.text.TextUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,10 +10,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public class MessageBean {
-
     public static final String SMART_SCREEN = "ss-clientID-SmartScreen";
     public static final String APP_STORE = "ss-clientID-appstore_12345";
-
 
     /**
      * id : 1f932332-0600-4d63-9016-89f85d298128
@@ -42,6 +40,14 @@ public class MessageBean {
         return id;
     }
 
+    public String getSource() {
+        return source;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
     @Override
     public String toString() {
         JSONObject object = new JSONObject();
@@ -63,6 +69,37 @@ public class MessageBean {
 
         return object.toString();
 
+    }
+
+    private MessageBean() {
+
+    }
+
+
+    public MessageBean(String json) {
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            id = jsonObject.optString("id", "");
+            source = jsonObject.optString("source", "");
+            target = jsonObject.optString("target", "");
+            clientSource = jsonObject.optString("client-source", "");
+            clientTarget = jsonObject.optString("client-target", "");
+            type = jsonObject.optString("type", "");
+
+            content = jsonObject.optString("content", "");
+            reply = jsonObject.optBoolean("reply", false);
+
+            JSONObject ext = jsonObject.optJSONObject("extra");
+            if (ext != null) {
+                String key = "force-sse";
+                String value = ext.optString(key, "");
+                if (!TextUtils.isEmpty(value)) {
+                    extra.put(key, value);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 

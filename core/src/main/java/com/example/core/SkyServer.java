@@ -15,6 +15,7 @@ import com.example.core.entity.MessageBean;
 import com.example.core.http.HttpConnector;
 import com.example.core.httpserver.SimpleServer;
 import com.example.core.socket.PduBase;
+import com.example.core.socket.ReceiveListener;
 import com.example.core.socket.TcpClient;
 import com.example.core.utils.AppUtils;
 import com.example.core.utils.DeviceUtils;
@@ -28,6 +29,7 @@ import org.json.JSONObject;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 
 public class SkyServer extends Service {
@@ -152,6 +154,57 @@ public class SkyServer extends Service {
         MessageBean msg = builder.build();
 
         mClient.sendProto(msg, null);
+    }
+
+
+    public void connectDevice(String targetSid) {
+
+        Session target = new Session();
+        target.setId(targetSid);
+
+        MessageBean.Builder builder = MessageBean.Builder.newBuilder();
+        builder.setSource(sourceSession.toString());
+        builder.setTarget(target.toString());
+        builder.setClientSource(MessageBean.SMART_SCREEN);
+        //builder.setClientSource(MessageBean.APP_STORE);
+        builder.setType("TEXT");
+        builder.setReply(false);
+        builder.setForceSse(true);
+        //builder.setContent(MessageBean.getKeyCodeContent(keyCode, keyEvent));
+        MessageBean msg = builder.build();
+
+        mClient.sendProto(msg, new ReceiveListener() {
+            @Override
+            public void OnRec(MessageBean msg) {
+                String target = msg.getSource();
+                if (!TextUtils.isEmpty(target)) {
+                    try {
+                        JSONObject jsonObject = new JSONObject(target);
+
+                        String id = jsonObject.optString("id", "");
+                        if (TextUtils.isEmpty(id)) {
+                            Log.e(TAG, "error");
+                        } else {
+                            targetSession.setId(id);
+                            JSONObject extraObj = jsonObject.optJSONObject("extra");
+                            if (extraObj != null) {
+                                String imLocal = extraObj.optString("im-local", "");
+                                String addressLocal = extraObj.optString("address-local", "");
+                                String streamLocal = extraObj.optString("stream-local", "");
+                                String imCloud = extraObj.optString("im-cloud", "");
+
+                                targetSession.setExtraItem("im-local", imLocal);
+                                targetSession.setExtraItem("address-local", addressLocal);
+                                targetSession.setExtraItem("stream-local", streamLocal);
+                                targetSession.setExtraItem("im-cloud", imCloud);
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 
 

@@ -20,7 +20,7 @@ public class KeyCmdImpl extends IKeyCmd.Stub {//Stub内部类，其实就是一�
 
     @Override
     public void sendKeyEvent(String key, String dstSid, int keyCode, String keyEvent) throws RemoteException {
-        mServer.sendProto(key, dstSid, keyCode, keyEvent);
+        mServer.sendKeyCmd(keyCode, keyEvent);
     }
 
 }

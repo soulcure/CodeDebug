@@ -262,19 +262,20 @@ public class TcpClient extends PduUtil implements Runnable {
 
     @Override
     public void OnRec(final String content) {
-        PduBase pduBase = new PduBase(content);
+        final MessageBean pduBase = new MessageBean(content);
+        final String key = pduBase.getId();
 
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-//                ReceiveListener callback = mCommonListener.get(key);
-//
-//                if (callback != null) {
-//                    callback.OnRec(pduBase.body);
-//                    mCommonListener.remove(key);
-//                } else {
-//                    OnCallback(pduBase);
-//                }
+                ReceiveListener callback = mCommonListener.get(key);
+
+                if (callback != null) {
+                    callback.OnRec(pduBase);
+                    mCommonListener.remove(key);
+                } else {
+                    OnCallback(pduBase);
+                }
             }
         });
 
@@ -283,7 +284,7 @@ public class TcpClient extends PduUtil implements Runnable {
 
 
     @Override
-    public void OnCallback(PduBase pduBase) {
+    public void OnCallback(MessageBean pduBase) {
         for (NotifyListener item : mNotifyListener) {
             /*if (item.getCommandId() == pduBase.msgType) {
                 item.OnRec(pduBase.body);
