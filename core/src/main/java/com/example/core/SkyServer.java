@@ -29,6 +29,8 @@ import org.json.JSONObject;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.Locale;
 
 
@@ -36,6 +38,7 @@ public class SkyServer extends Service {
     public static final String TAG = "AIDL";
 
     private RemoteCallbackList<ICallback> mCallBack = new RemoteCallbackList<>();
+    private ConcurrentMap<String, String> mapKey = new ConcurrentHashMap<>();  //线程安全
 
     private Session sourceSession, targetSession;
     private TcpClient mClient;
@@ -106,7 +109,10 @@ public class SkyServer extends Service {
     }
 
 
-    private void pingTarget(String sid) {
+    private void pingTarget(String msgId, String appId, String sid) {
+        if (!TextUtils.isEmpty(msgId)) {
+            mapKey.put(msgId, appId);
+        }
 
         String targetIp = "";
         int targetPort = 0;
@@ -253,14 +259,23 @@ public class SkyServer extends Service {
         return families;
     }
 
-    private void callback(String info) {
+    private void callback(String msgId, String info) {
         final int n = mCallBack.beginBroadcast();
         for (int i = 0; i < n; i++) {
             try {
                 ICallback callback = mCallBack.getBroadcastItem(i);
                 String key = (String) mCallBack.getBroadcastCookie(i);
 
-                callback.onResult(info);
+                if (mapKey.containsKey(msgId)) {
+                    String appId = mapKey.get(msgId);
+                    if (appId != null && appId.equals(key)) {
+                        callback.onResult(info);
+                        mapKey.remove(msgId);
+                        break;
+                    }
+                }
+
+
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
