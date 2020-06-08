@@ -1,6 +1,5 @@
 package com.example.core;
 
-import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -11,10 +10,9 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.example.core.entity.MessageBean;
+import com.example.sdk.entity.PduBase;
 import com.example.core.http.HttpConnector;
 import com.example.core.httpserver.SimpleServer;
-import com.example.core.socket.PduBase;
 import com.example.core.socket.ReceiveListener;
 import com.example.core.socket.TcpClient;
 import com.example.core.utils.AppUtils;
@@ -31,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.Locale;
 
 
 public class SkyServer extends Service {
@@ -127,6 +124,39 @@ public class SkyServer extends Service {
     }
 
 
+    public void sendProto(String appId, PduBase pdu) {
+
+        String msgId = pdu.getId();
+
+        if (!TextUtils.isEmpty(msgId)) {
+            mapKey.put(msgId, appId);
+        }
+
+        String targetIp = "";
+        int targetPort = 0;
+
+//        targetSession.setId(sid);
+//        targetSession.setExtraItem(Session.IM_CLOUD, sid);
+//
+//        targetSession.setExtraItem(Session.ADDRESS_LOCAL, targetIp);
+//        targetSession.setExtraItem(Session.ADDRESS_LOCAL, targetIp);
+//
+//        targetSession.setExtraItem(Session.IM_LOCAL, targetIp + ":" + targetPort);
+
+        ReceiveListener callback = null;
+        if (!TextUtils.isEmpty(msgId)) {
+            callback = new ReceiveListener() {
+                @Override
+                public void OnRec(PduBase msg) {
+
+                }
+            };
+        }
+        mClient.sendProto(pdu, callback);
+
+    }
+
+
     public void registerCallback(String key, ICallback cb) throws RemoteException {
         if (TextUtils.isEmpty(key) || cb == null) {
             return;
@@ -148,16 +178,16 @@ public class SkyServer extends Service {
 
     public void sendKeyCmd(int keyCode, String keyEvent) {
 
-        MessageBean.Builder builder = MessageBean.Builder.newBuilder();
+        PduBase.Builder builder = PduBase.Builder.newBuilder();
         builder.setSource(sourceSession.toString());
         builder.setTarget(targetSession.toString());
-        builder.setClientSource(MessageBean.SMART_SCREEN);
-        builder.setClientSource(MessageBean.APP_STORE);
+        builder.setClientSource(PduBase.SMART_SCREEN);
+        builder.setClientSource(PduBase.APP_STORE);
         builder.setType("TEXT");
         builder.setReply(false);
         builder.setForceSse(true);
-        builder.setContent(MessageBean.getKeyCodeContent(keyCode, keyEvent));
-        MessageBean msg = builder.build();
+        builder.setContent(PduBase.getKeyCodeContent(keyCode, keyEvent));
+        PduBase msg = builder.build();
 
         mClient.sendProto(msg, null);
     }
@@ -168,20 +198,20 @@ public class SkyServer extends Service {
         Session target = new Session();
         target.setId(targetSid);
 
-        MessageBean.Builder builder = MessageBean.Builder.newBuilder();
+        PduBase.Builder builder = PduBase.Builder.newBuilder();
         builder.setSource(sourceSession.toString());
         builder.setTarget(target.toString());
-        builder.setClientSource(MessageBean.SMART_SCREEN);
+        builder.setClientSource(PduBase.SMART_SCREEN);
         //builder.setClientSource(MessageBean.APP_STORE);
         builder.setType("TEXT");
         builder.setReply(false);
         builder.setForceSse(true);
         //builder.setContent(MessageBean.getKeyCodeContent(keyCode, keyEvent));
-        MessageBean msg = builder.build();
+        PduBase msg = builder.build();
 
         mClient.sendProto(msg, new ReceiveListener() {
             @Override
-            public void OnRec(MessageBean msg) {
+            public void OnRec(PduBase msg) {
                 String target = msg.getSource();
                 if (!TextUtils.isEmpty(target)) {
                     try {

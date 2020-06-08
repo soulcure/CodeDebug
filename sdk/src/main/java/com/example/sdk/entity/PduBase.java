@@ -1,5 +1,7 @@
-package com.example.core.entity;
+package com.example.sdk.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 
 import org.json.JSONException;
@@ -9,9 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class MessageBean {
-    public static final String SMART_SCREEN = "ss-clientID-SmartScreen";
-    public static final String APP_STORE = "ss-clientID-appstore_12345";
+public class PduBase implements Parcelable {
+
+    public static final String SMART_SCREEN = "ss-clientID-SmartScreen";   //iot-channel通道 clientID
+    public static final String APP_STORE = "ss-clientID-appstore_12345";   //应用圈 clientID
 
     /**
      * id : 1f932332-0600-4d63-9016-89f85d298128
@@ -63,6 +66,8 @@ public class MessageBean {
             JSONObject jsonObj = new JSONObject(extra);//转化为json格式
             object.put("extra", jsonObj);
 
+            object.put("reply", reply);
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -71,12 +76,12 @@ public class MessageBean {
 
     }
 
-    private MessageBean() {
+    private PduBase() {
 
     }
 
 
-    public MessageBean(String json) {
+    public PduBase(String json) {
         try {
             JSONObject jsonObject = new JSONObject(json);
             id = jsonObject.optString("id", "");
@@ -175,18 +180,70 @@ public class MessageBean {
             return this;
         }
 
-        public MessageBean build() {
-            MessageBean messageBean = new MessageBean();
-            messageBean.id = UUID.randomUUID().toString();
-            messageBean.clientSource = this.clientSource;
-            messageBean.content = this.content;
-            messageBean.source = this.source;
-            messageBean.type = this.type;
-            messageBean.target = this.target;
-            messageBean.extra = this.extra;
-            messageBean.clientTarget = this.clientTarget;
-            messageBean.reply = this.reply;
-            return messageBean;
+        public PduBase build() {
+            PduBase pduBase = new PduBase();
+            pduBase.id = UUID.randomUUID().toString();
+            pduBase.clientSource = this.clientSource;
+            pduBase.content = this.content;
+            pduBase.source = this.source;
+            pduBase.type = this.type;
+            pduBase.target = this.target;
+            pduBase.extra = this.extra;
+            pduBase.clientTarget = this.clientTarget;
+            pduBase.reply = this.reply;
+            return pduBase;
         }
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.id);
+        dest.writeString(this.source);
+        dest.writeString(this.target);
+        dest.writeString(this.clientSource);
+        dest.writeString(this.clientTarget);
+        dest.writeString(this.type);
+        dest.writeString(this.content);
+        dest.writeInt(this.extra.size());
+        for (Map.Entry<String, String> entry : this.extra.entrySet()) {
+            dest.writeString(entry.getKey());
+            dest.writeString(entry.getValue());
+        }
+        dest.writeByte(this.reply ? (byte) 1 : (byte) 0);
+    }
+
+    protected PduBase(Parcel in) {
+        this.id = in.readString();
+        this.source = in.readString();
+        this.target = in.readString();
+        this.clientSource = in.readString();
+        this.clientTarget = in.readString();
+        this.type = in.readString();
+        this.content = in.readString();
+        int extraSize = in.readInt();
+        this.extra = new HashMap<String, String>(extraSize);
+        for (int i = 0; i < extraSize; i++) {
+            String key = in.readString();
+            String value = in.readString();
+            this.extra.put(key, value);
+        }
+        this.reply = in.readByte() != 0;
+    }
+
+    public static final Parcelable.Creator<PduBase> CREATOR = new Parcelable.Creator<PduBase>() {
+        @Override
+        public PduBase createFromParcel(Parcel source) {
+            return new PduBase(source);
+        }
+
+        @Override
+        public PduBase[] newArray(int size) {
+            return new PduBase[size];
+        }
+    };
 }

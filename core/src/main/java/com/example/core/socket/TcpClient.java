@@ -6,7 +6,7 @@ import android.os.Message;
 import android.util.Log;
 
 
-import com.example.core.entity.MessageBean;
+import com.example.sdk.entity.PduBase;
 import com.example.core.utils.AppUtils;
 
 import java.io.IOException;
@@ -153,12 +153,12 @@ public class TcpClient extends PduUtil implements Runnable {
      *
      * @param callback 回调
      */
-    public synchronized void sendProto(MessageBean msg, ReceiveListener callback) {
-        String key = msg.getId();
+    public synchronized void sendProto(PduBase pdu, ReceiveListener callback) {
+        String key = pdu.getId();
         if (callback != null) {
             mCommonListener.put(key, callback);
         }
-        sendPdu(msg.toString());
+        sendPdu(pdu.toString());
     }
 
 
@@ -262,7 +262,7 @@ public class TcpClient extends PduUtil implements Runnable {
 
     @Override
     public void OnRec(final String content) {
-        final MessageBean pduBase = new MessageBean(content);
+        final PduBase pduBase = new PduBase(content);
         final String key = pduBase.getId();
 
         mHandler.post(new Runnable() {
@@ -284,7 +284,7 @@ public class TcpClient extends PduUtil implements Runnable {
 
 
     @Override
-    public void OnCallback(MessageBean pduBase) {
+    public void OnCallback(PduBase pduBase) {
         for (NotifyListener item : mNotifyListener) {
             /*if (item.getCommandId() == pduBase.msgType) {
                 item.OnRec(pduBase.body);
