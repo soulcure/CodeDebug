@@ -2,6 +2,7 @@ package com.example.core;
 
 import android.app.Service;
 import android.content.Intent;
+import android.media.MediaCodec;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -17,18 +18,22 @@ import androidx.annotation.Nullable;
 import com.example.sdk.entity.PduBase;
 import com.example.core.http.HttpConnector;
 import com.example.core.httpserver.SimpleServer;
-import com.example.core.socket.ReceiveListener;
-import com.example.core.socket.TcpClient;
 import com.example.core.utils.AppUtils;
 import com.example.core.utils.DeviceUtils;
 import com.example.sdk.ICallback;
 import com.example.sdk.entity.Device;
 import com.example.sdk.entity.Family;
+import com.skyworth.dpclientsdk.ConnectState;
+import com.skyworth.dpclientsdk.StreamSinkCallback;
+import com.skyworth.dpclientsdk.StreamSourceCallback;
+import com.skyworth.dpclientsdk.TcpClient;
+import com.skyworth.dpclientsdk.TcpServer;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,6 +43,7 @@ import java.util.concurrent.ConcurrentMap;
 public class SkyServer extends Service {
     public static final String TAG = "AIDL";
 
+    private static final int LOCAL_PORT = 34000;
 
     private static final int HANDLER_THREAD_INIT_CONFIG_START = 1;
     private static final int HANDLER_THREAD_AUTO_LOGIN = 2;
@@ -48,22 +54,89 @@ public class SkyServer extends Service {
     private ConcurrentMap<String, String> mapKey = new ConcurrentHashMap<>();  //线程安全
 
     private Session sourceSession, targetSession;
-    private TcpClient mClient;
+    private TcpClient tcpClient;
+    private TcpServer tcpServer;
+
+    private StreamSinkCallback streamSinkCallback = new StreamSinkCallback() {
+        @Override
+        public void onConnectState(ConnectState connectState) {
+
+        }
+
+        @Override
+        public void onData(String s) {
+
+        }
+
+        @Override
+        public void onData(byte[] bytes) {
+
+        }
+
+        @Override
+        public void onAudioFrame(MediaCodec.BufferInfo bufferInfo, ByteBuffer byteBuffer) {
+
+        }
+
+        @Override
+        public void onVideoFrame(MediaCodec.BufferInfo bufferInfo, ByteBuffer byteBuffer) {
+
+        }
+
+        @Override
+        public void ping(String s) {
+
+        }
+
+        @Override
+        public void pong(String s) {
+
+        }
+    };
+
+    private StreamSourceCallback streamSourceCallback = new StreamSourceCallback() {
+        @Override
+        public void onConnectState(ConnectState connectState) {
+
+        }
+
+        @Override
+        public void onData(String s) {
+
+        }
+
+        @Override
+        public void onData(byte[] bytes) {
+
+        }
+
+        @Override
+        public void ping(String s) {
+
+        }
+
+        @Override
+        public void pong(String s) {
+
+        }
+    };
 
     @Override
     public void onCreate() {
         super.onCreate();
         initHandler();
 
+        tcpServer = new TcpServer(LOCAL_PORT, TcpServer.BUFFER_SIZE_LOW, streamSinkCallback);
+
+
         sourceSession = new Session();
         targetSession = new Session();
 
-        mClient = new TcpClient(this);
 
         SimpleServer simpleServer = new SimpleServer(this, 8088);//开启服务器
         simpleServer.startServer();
 
-        createTcp();
+        createTcp("192.168.50.106");
     }
 
     @Nullable
@@ -73,30 +146,17 @@ public class SkyServer extends Service {
     }
 
 
-    private void createTcp() {
-        final String sid = AppUtils.getStringSharedPreferences(this, "sid", null);
-        if (TextUtils.isEmpty(sid)) {
-            Log.e("TAG", "sid is null ,not create tcp connect");
+    private void createTcp(String ip) {
+        if (TextUtils.isEmpty(ip)) {
+            Log.e(TAG, "createTcp error --- ip address is null");
             return;
         }
-
-        String ip = "192.168.1.1";   //ip
-        int port = 5566;             //port
-
-        Log.d(TAG, "createTcp ip:" + ip + "   port:" + port);
-
-        if (!mClient.isConnect()) {
-            InetSocketAddress isa = new InetSocketAddress(ip, port);
-            mClient.setRemoteAddress(isa);
-            TcpClient.IClientListener callback = new TcpClient.IClientListener() {
-                @Override
-                public void connectSuccess() {
-                    tcpLogin(sid);
-                }
-            };
-            mClient.connect(callback);
+        if (tcpClient != null) {
+            tcpClient.close();
+            tcpClient = null;
         }
-
+        tcpClient = new TcpClient(ip, LOCAL_PORT, streamSourceCallback);
+        tcpClient.open();
     }
 
     /**
@@ -146,25 +206,6 @@ public class SkyServer extends Service {
         String targetIp = "";
         int targetPort = 0;
 
-//        targetSession.setId(sid);
-//        targetSession.setExtraItem(Session.IM_CLOUD, sid);
-//
-//        targetSession.setExtraItem(Session.ADDRESS_LOCAL, targetIp);
-//        targetSession.setExtraItem(Session.ADDRESS_LOCAL, targetIp);
-//
-//        targetSession.setExtraItem(Session.IM_LOCAL, targetIp + ":" + targetPort);
-
-        ReceiveListener callback = null;
-        if (!TextUtils.isEmpty(msgId)) {
-            callback = new ReceiveListener() {
-                @Override
-                public void OnRec(PduBase msg) {
-
-                }
-            };
-        }
-        mClient.sendProto(pdu, callback);
-
     }
 
 
@@ -199,8 +240,6 @@ public class SkyServer extends Service {
         builder.setForceSse(true);
         builder.setContent(PduBase.getKeyCodeContent(keyCode, keyEvent));
         PduBase msg = builder.build();
-
-        mClient.sendProto(msg, null);
     }
 
 
@@ -220,38 +259,6 @@ public class SkyServer extends Service {
         //builder.setContent(MessageBean.getKeyCodeContent(keyCode, keyEvent));
         PduBase msg = builder.build();
 
-        mClient.sendProto(msg, new ReceiveListener() {
-            @Override
-            public void OnRec(PduBase msg) {
-                String target = msg.getSource();
-                if (!TextUtils.isEmpty(target)) {
-                    try {
-                        JSONObject jsonObject = new JSONObject(target);
-
-                        String id = jsonObject.optString("id", "");
-                        if (TextUtils.isEmpty(id)) {
-                            Log.e(TAG, "error");
-                        } else {
-                            targetSession.setId(id);
-                            JSONObject extraObj = jsonObject.optJSONObject("extra");
-                            if (extraObj != null) {
-                                String imLocal = extraObj.optString("im-local", "");
-                                String addressLocal = extraObj.optString("address-local", "");
-                                String streamLocal = extraObj.optString("stream-local", "");
-                                String imCloud = extraObj.optString("im-cloud", "");
-
-                                targetSession.setExtraItem("im-local", imLocal);
-                                targetSession.setExtraItem("address-local", addressLocal);
-                                targetSession.setExtraItem("stream-local", streamLocal);
-                                targetSession.setExtraItem("im-cloud", imCloud);
-                            }
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
     }
 
 
