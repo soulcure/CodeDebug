@@ -2,7 +2,11 @@ package com.example.core;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.text.TextUtils;
@@ -34,6 +38,12 @@ import java.util.concurrent.ConcurrentMap;
 public class SkyServer extends Service {
     public static final String TAG = "AIDL";
 
+
+    private static final int HANDLER_THREAD_INIT_CONFIG_START = 1;
+    private static final int HANDLER_THREAD_AUTO_LOGIN = 2;
+
+    private ProcessHandler mProcessHandler;  //子线程 handler
+
     private RemoteCallbackList<ICallback> mCallBack = new RemoteCallbackList<>();
     private ConcurrentMap<String, String> mapKey = new ConcurrentHashMap<>();  //线程安全
 
@@ -43,6 +53,7 @@ public class SkyServer extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        initHandler();
 
         sourceSession = new Session();
         targetSession = new Session();
@@ -314,4 +325,49 @@ public class SkyServer extends Service {
     }
 
 
+    public void post(Runnable r) {
+        mProcessHandler.post(r);
+    }
+
+    public void postDelayed(Runnable r, long delay) {
+        mProcessHandler.postDelayed(r, delay);
+    }
+
+    /**
+     * 线程初始化
+     */
+    private void initHandler() {
+        if (mProcessHandler == null) {
+            HandlerThread handlerThread = new HandlerThread("SkyServer-Thread");
+            handlerThread.start();
+            mProcessHandler = new ProcessHandler(handlerThread.getLooper());
+        }
+    }
+
+
+    /**
+     * 子线程handler,looper
+     *
+     * @author Administrator
+     */
+    private static class ProcessHandler extends Handler {
+
+        public ProcessHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case HANDLER_THREAD_INIT_CONFIG_START:
+                    break;
+                case HANDLER_THREAD_AUTO_LOGIN:
+                    break;
+                default:
+                    break;
+            }
+
+        }
+
+    }
 }
