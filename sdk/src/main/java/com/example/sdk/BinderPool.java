@@ -141,8 +141,8 @@ public class BinderPool {
     }
 
     private void bindService(){
+        String PROXY_SERVICE_PACKAGE = "com.example.app";
         String PROXY_SERVICE = "com.example.core.SkyServer";
-        String PROXY_SERVICE_PACKAGE = "com.example.code";
 
         Intent intent = new Intent(PROXY_SERVICE);
         intent.setClassName(PROXY_SERVICE_PACKAGE, PROXY_SERVICE);
