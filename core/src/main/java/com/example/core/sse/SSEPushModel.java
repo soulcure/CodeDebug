@@ -36,14 +36,14 @@ public class SSEPushModel {
 
     private static final int HANDLER_SSE_RECONNECT = 1;
 
-    public SSEPushModel(Context context, @NonNull SkyServer server, @NonNull MsgCallBack callback) {
-        mContext = context;
+    public SSEPushModel(@NonNull SkyServer server, @NonNull MsgCallBack callback) {
+        mContext = server;
         mSkyServer = server;
         msgCallBack = callback;
 
-        mConnectHandler = new ConnectHandler(context.getMainLooper());
+        mConnectHandler = new ConnectHandler(mContext.getMainLooper());
 
-        mIotSSEMsgLib = new IotSSEMsgLib(context, new IotSSEMsgLib.IOTSSEMsgListener() {
+        mIotSSEMsgLib = new IotSSEMsgLib(mContext, new IotSSEMsgLib.IOTSSEMsgListener() {
             @Override
             public String appSalt() {
                 return APP_SALT;

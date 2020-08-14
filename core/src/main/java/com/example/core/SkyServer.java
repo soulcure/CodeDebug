@@ -15,6 +15,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.example.core.callback.MsgCallBack;
+import com.example.core.sse.SSEPushModel;
 import com.example.sdk.entity.PduBase;
 import com.example.core.http.HttpConnector;
 import com.example.core.httpserver.SimpleServer;
@@ -128,6 +130,23 @@ public class SkyServer extends Service {
 
         tcpServer = new TcpServer(LOCAL_PORT, TcpServer.BUFFER_SIZE_LOW, streamSinkCallback);
 
+        SSEPushModel ssePushModel = new SSEPushModel(this, new MsgCallBack() {
+            @Override
+            public void onSendResult(int code, String msg) {
+
+            }
+
+            @Override
+            public void onReceiveString(String msg) {
+
+            }
+
+            @Override
+            public void onReceiveFile(String fileId, String url) {
+
+            }
+        });
+        ssePushModel.initPushSEE("sid123456789");
 
         sourceSession = new Session();
         targetSession = new Session();
