@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import com.example.sdk.DevicesListener;
 import com.example.sdk.FamiliesListener;
+import com.example.sdk.SameLan;
 import com.example.sdk.SdkManager;
 import com.example.sdk.entity.Device;
 import com.example.sdk.entity.Family;
@@ -66,13 +67,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 });
                 break;
             case R.id.test_tag_inout:
-                SdkManager.instance(this).getDevices("1", new DevicesListener() {
+                /*SdkManager.instance(this).getDevices("1", new DevicesListener() {
                     @Override
                     public void onSuccess(List<Device> list) {
                         tv_info.setText(list.get(0).getDeviceName());
                         Log.e(TAG, "client getDevices:" + list.toString());
                     }
-                });
+                });*/
+
+                String ip = "172.20.146.248";
+                //String ip = "192.168.50.66";
+                boolean test = SameLan.isInSameLAN(ip);
+                Log.e("yao", "test:" + test);
                 break;
             default:
                 break;
